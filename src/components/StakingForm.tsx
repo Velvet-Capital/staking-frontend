@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useWeb3 } from '../contexts/Web3Context';
 import { ethers } from 'ethers';
 import './StakingForm.css';
@@ -14,13 +14,7 @@ const StakingForm: React.FC = () => {
   const [tokenBalance, setTokenBalance] = useState('0');
   const [stakedAmount, setStakedAmount] = useState('0');
 
-  useEffect(() => {
-    if (isConnected && account) {
-      loadBalances();
-    }
-  }, [isConnected, account]);
-
-  const loadBalances = async () => {
+  const loadBalances = useCallback(async () => {
     if (!isConnected || !veVirtualContract || !mockTokenContract || !account) return;
 
     try {
@@ -32,7 +26,13 @@ const StakingForm: React.FC = () => {
     } catch (err) {
       console.error('Error loading balances:', err);
     }
-  };
+  }, [isConnected, veVirtualContract, mockTokenContract, account]);
+
+  useEffect(() => {
+    if (isConnected && account) {
+      loadBalances();
+    }
+  }, [isConnected, account, loadBalances]);
 
   const handleStake = async (e: React.FormEvent) => {
     e.preventDefault();
