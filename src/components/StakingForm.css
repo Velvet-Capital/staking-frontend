@@ -269,4 +269,75 @@
 .staking-form .withdraw-button:disabled {
   background-color: #ff0000 !important;
   cursor: not-allowed;
+}
+
+.positions-container {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.positions-title {
+  color: #ffffff;
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+.positions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.position-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 1.25rem;
+}
+
+.position-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.position-id {
+  color: #a3a3a3;
+  font-size: 0.875rem;
+}
+
+.auto-renew-badge {
+  background: #059669;
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.position-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.position-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-label {
+  color: #a3a3a3;
+  font-size: 0.875rem;
+}
+
+.detail-value {
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 500;
 } 

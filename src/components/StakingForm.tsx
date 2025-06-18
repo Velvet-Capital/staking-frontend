@@ -3,6 +3,15 @@ import { useWeb3 } from '../contexts/Web3Context';
 import { ethers } from 'ethers';
 import './StakingForm.css';
 
+interface Position {
+  amount: string;
+  start: string;
+  end: string;
+  numWeeks: number;
+  autoRenew: boolean;
+  id: string;
+}
+
 const StakingForm: React.FC = () => {
   const { veVirtualContract, mockTokenContract, isConnected, account } = useWeb3();
   const [amount, setAmount] = useState('');
@@ -13,6 +22,28 @@ const StakingForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [tokenBalance, setTokenBalance] = useState('0');
   const [stakedAmount, setStakedAmount] = useState('0');
+  const [positions, setPositions] = useState<Position[]>([]);
+
+  const loadPositions = useCallback(async () => {
+    if (!isConnected || !veVirtualContract || !account) return;
+
+    try {
+      const positions = await veVirtualContract.getPositions(account, 0, 100);
+      const formattedPositions = positions
+        .filter((pos: any) => !pos.amount.isZero())
+        .map((pos: any) => ({
+          amount: ethers.utils.formatEther(pos.amount),
+          start: new Date(pos.start.toNumber() * 1000).toLocaleString(),
+          end: new Date(pos.end.toNumber() * 1000).toLocaleString(),
+          numWeeks: pos.numWeeks,
+          autoRenew: pos.autoRenew,
+          id: pos.id.toString()
+        }));
+      setPositions(formattedPositions);
+    } catch (err) {
+      console.error('Error loading positions:', err);
+    }
+  }, [isConnected, veVirtualContract, account]);
 
   const loadBalances = useCallback(async () => {
     if (!isConnected || !veVirtualContract || !mockTokenContract || !account) return;
@@ -31,8 +62,9 @@ const StakingForm: React.FC = () => {
   useEffect(() => {
     if (isConnected && account) {
       loadBalances();
+      loadPositions();
     }
-  }, [isConnected, account, loadBalances]);
+  }, [isConnected, account, loadBalances, loadPositions]);
 
   const handleStake = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,15 +92,10 @@ const StakingForm: React.FC = () => {
       const stakeTx = await veVirtualContract.stake(amountWei, duration, autoUpdate);
       await stakeTx.wait();
 
-      const balance = await mockTokenContract.balanceOf(account);
-      const staked = await veVirtualContract.balanceOf(account);
-
-      setTokenBalance(ethers.utils.formatEther(balance));
-      setStakedAmount(ethers.utils.formatEther(staked));
-
       setAmount('');
       setDuration('30');
       await loadBalances();
+      await loadPositions();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -96,16 +123,9 @@ const StakingForm: React.FC = () => {
       });
       await tx.wait();
 
-      if (!isConnected || !veVirtualContract || !mockTokenContract || !account) return;
-
-      const balance = await mockTokenContract.balanceOf(account);
-      const staked = await veVirtualContract.balanceOf(account);
-
-      setTokenBalance(ethers.utils.formatEther(balance));
-      setStakedAmount(ethers.utils.formatEther(staked));
-
       setWithdrawId('');
       await loadBalances();
+      await loadPositions();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -128,15 +148,8 @@ const StakingForm: React.FC = () => {
       const tx = await mockTokenContract.mint(account, mintAmount);
       await tx.wait();
 
-      if (!isConnected || !veVirtualContract || !mockTokenContract || !account) return;
-
-      const balance = await mockTokenContract.balanceOf(account);
-      const staked = await veVirtualContract.balanceOf(account);
-
-      setTokenBalance(ethers.utils.formatEther(balance));
-      setStakedAmount(ethers.utils.formatEther(staked));
-
-      // You might want to refresh balances here
+      await loadBalances();
+      await loadPositions();
       console.log('Successfully minted tokens');
     } catch (err) {
       console.error('Error minting tokens:', err);
@@ -264,6 +277,42 @@ const StakingForm: React.FC = () => {
           </div>
         </div>
       </form>
+
+      {positions.length > 0 && (
+        <div className="positions-container">
+          <h3 className="positions-title">Your Positions</h3>
+          <div className="positions-grid">
+            {positions.map((position) => (
+              <div key={position.id} className="position-item">
+                <div className="position-header">
+                  <span className="position-id">ID: {position.id}</span>
+                  {position.autoRenew && (
+                    <span className="auto-renew-badge">Auto Renew</span>
+                  )}
+                </div>
+                <div className="position-details">
+                  <div className="position-detail">
+                    <span className="detail-label">Amount:</span>
+                    <span className="detail-value">{position.amount} MOCK</span>
+                  </div>
+                  <div className="position-detail">
+                    <span className="detail-label">Duration:</span>
+                    <span className="detail-value">{position.numWeeks} minutes</span>
+                  </div>
+                  <div className="position-detail">
+                    <span className="detail-label">Start:</span>
+                    <span className="detail-value">{position.start}</span>
+                  </div>
+                  <div className="position-detail">
+                    <span className="detail-label">End:</span>
+                    <span className="detail-value">{position.end}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
