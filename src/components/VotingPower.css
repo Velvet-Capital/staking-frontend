@@ -1,0 +1,30 @@
+.voting-power-container {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.voting-power-label {
+  color: #a3a3a3;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.voting-power-value {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loading {
+  color: #a3a3a3;
+  font-size: 1rem;
+  font-style: italic;
+} 

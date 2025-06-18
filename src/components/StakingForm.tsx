@@ -17,12 +17,12 @@ const StakingForm: React.FC = () => {
   const [amount, setAmount] = useState('');
   const [duration, setDuration] = useState('30');
   const [autoUpdate, setAutoUpdate] = useState(false);
-  const [withdrawId, setWithdrawId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tokenBalance, setTokenBalance] = useState('0');
   const [stakedAmount, setStakedAmount] = useState('0');
   const [positions, setPositions] = useState<Position[]>([]);
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
 
   const loadPositions = useCallback(async () => {
     if (!isConnected || !veVirtualContract || !account) return;
@@ -103,33 +103,29 @@ const StakingForm: React.FC = () => {
     }
   };
 
-  const handleWithdraw = async () => {
+  const handleWithdraw = async (id: string) => {
     if (!isConnected || !veVirtualContract) {
       setError('Please connect your wallet first');
       return;
     }
 
-    if (!withdrawId) {
-      setError('Please enter a valid ID');
-      return;
-    }
-
     try {
       setLoading(true);
+      setWithdrawingId(id);
       setError(null);
 
-      const tx = await veVirtualContract.withdraw(withdrawId, {
+      const tx = await veVirtualContract.withdraw(id, {
         gasLimit: 1000000,
       });
       await tx.wait();
 
-      setWithdrawId('');
       await loadBalances();
       await loadPositions();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
+      setWithdrawingId(null);
     }
   };
 
@@ -154,6 +150,29 @@ const StakingForm: React.FC = () => {
     } catch (err) {
       console.error('Error minting tokens:', err);
       setError(err instanceof Error ? err.message : 'Failed to mint tokens');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleAutoRenew = async (id: string) => {
+    if (!isConnected || !veVirtualContract) {
+      setError('Please connect your wallet first');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const tx = await veVirtualContract.toggleAutoRenew(id, {
+        gasLimit: 1000000,
+      });
+      await tx.wait();
+
+      await loadPositions();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -257,23 +276,6 @@ const StakingForm: React.FC = () => {
             >
               {loading ? 'Staking...' : 'Stake'}
             </button>
-            <div className="withdraw-group">
-              <input
-                type="number"
-                value={withdrawId}
-                onChange={(e) => setWithdrawId(e.target.value)}
-                placeholder="Enter ID"
-                className="withdraw-input"
-              />
-              <button
-                type="button"
-                onClick={handleWithdraw}
-                disabled={loading || !withdrawId}
-                className="withdraw-button"
-              >
-                {loading ? 'Withdrawing...' : 'Withdraw'}
-              </button>
-            </div>
           </div>
         </div>
       </form>
@@ -286,9 +288,22 @@ const StakingForm: React.FC = () => {
               <div key={position.id} className="position-item">
                 <div className="position-header">
                   <span className="position-id">ID: {position.id}</span>
-                  {position.autoRenew && (
-                    <span className="auto-renew-badge">Auto Renew</span>
-                  )}
+                  <div className="position-actions">
+                    <button
+                      onClick={() => handleToggleAutoRenew(position.id)}
+                      className={`auto-renew-toggle ${position.autoRenew ? 'active' : ''}`}
+                      disabled={loading}
+                    >
+                      {position.autoRenew ? 'Auto-Renew On' : 'Auto-Renew Off'}
+                    </button>
+                    <button
+                      onClick={() => handleWithdraw(position.id)}
+                      className="withdraw-button"
+                      disabled={loading || withdrawingId === position.id}
+                    >
+                      {withdrawingId === position.id ? 'Withdrawing...' : 'Withdraw'}
+                    </button>
+                  </div>
                 </div>
                 <div className="position-details">
                   <div className="position-detail">

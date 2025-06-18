@@ -303,7 +303,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 12px;
 }
 
 .position-id {
@@ -340,4 +340,55 @@
   color: #ffffff;
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+.position-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.auto-renew-toggle {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background-color: #374151;
+  color: #9ca3af;
+}
+
+.position-item .withdraw-button {
+  padding: 4px 12px;
+  min-width: 65px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background-color: #6366f1;
+  color: white;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.auto-renew-toggle.active {
+  background-color: #059669;
+  color: white;
+}
+
+.auto-renew-toggle:hover:not(:disabled) {
+  background-color: #065f46;
+}
+
+.position-item .withdraw-button:hover:not(:disabled) {
+  background-color: #4f46e5;
+}
+
+.position-item .withdraw-button:disabled {
+  background-color: #a5b4fc;
+  cursor: not-allowed;
 } 
