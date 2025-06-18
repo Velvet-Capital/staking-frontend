@@ -60,6 +60,12 @@ const StakingForm: React.FC = () => {
       const stakeTx = await veVirtualContract.stake(amountWei, duration, autoUpdate);
       await stakeTx.wait();
 
+      const balance = await mockTokenContract.balanceOf(account);
+      const staked = await veVirtualContract.balanceOf(account);
+
+      setTokenBalance(ethers.utils.formatEther(balance));
+      setStakedAmount(ethers.utils.formatEther(staked));
+
       setAmount('');
       setDuration('30');
       await loadBalances();
@@ -90,6 +96,14 @@ const StakingForm: React.FC = () => {
       });
       await tx.wait();
 
+      if (!isConnected || !veVirtualContract || !mockTokenContract || !account) return;
+
+      const balance = await mockTokenContract.balanceOf(account);
+      const staked = await veVirtualContract.balanceOf(account);
+
+      setTokenBalance(ethers.utils.formatEther(balance));
+      setStakedAmount(ethers.utils.formatEther(staked));
+
       setWithdrawId('');
       await loadBalances();
     } catch (err) {
@@ -113,6 +127,14 @@ const StakingForm: React.FC = () => {
       const mintAmount = ethers.utils.parseEther('1000');
       const tx = await mockTokenContract.mint(account, mintAmount);
       await tx.wait();
+
+      if (!isConnected || !veVirtualContract || !mockTokenContract || !account) return;
+
+      const balance = await mockTokenContract.balanceOf(account);
+      const staked = await veVirtualContract.balanceOf(account);
+
+      setTokenBalance(ethers.utils.formatEther(balance));
+      setStakedAmount(ethers.utils.formatEther(staked));
 
       // You might want to refresh balances here
       console.log('Successfully minted tokens');
